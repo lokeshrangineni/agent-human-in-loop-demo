@@ -12,6 +12,11 @@ Invoice processing and approval workflow.
 
 ### User Trigger
 - The user uploads an invoice (image or PDF) to kick off the workflow.
+- Uploaded documents may be:
+  - **Low-resolution** images or photos (blurry, noisy, poorly lit).
+  - **Scanned paper documents** with scan artifacts (skew, shadows, folds, stamps).
+  - **Unpredictable formats** containing extraneous or irrelevant information (e.g., handwritten notes, marketing content, terms and conditions, logos) alongside the actual invoice data.
+- The system must handle all of these gracefully — extracting useful data while ignoring noise and irrelevant content.
 
 ### Agents
 
@@ -58,11 +63,37 @@ Invoice processing and approval workflow.
 - Over time, confidence scores should improve for recurring vendors and invoice formats as the agents accumulate more feedback.
 - The system should surface a summary of how agent accuracy has improved (e.g., fewer corrections needed over time) to demonstrate the value of the feedback loop.
 
+### Roles and Permissions
+
+**User Role**
+- Can upload invoices and trigger the extraction workflow.
+- Can review extracted data, validation results, and confidence scores.
+- Can approve, reject, request re-processing, manually correct fields, and add new rows/fields.
+- Can provide feedback on extraction and validation results.
+- Can view all past extractions in a tabular format and drill into the details of any individual extraction.
+
+**Admin Role**
+- Has all User permissions.
+- Can review feedback submitted by users before it is applied to the agents.
+- Can modify user-submitted feedback (edit, approve, or reject it) and then submit the final version to the agents for learning.
+- Can view all past extractions in a tabular format and drill into the details of any individual extraction.
+
+**Authentication (Initial Implementation)**
+- For the initial demo, user and admin accounts are hardcoded and selectable from a dropdown (no login flow).
+- The dropdown should include at least one admin and one user (e.g., "Admin - Jane" and "User - John").
+- The system should be designed so that SSO integration can replace the dropdown in the future without major refactoring.
+
+### Extraction History
+- Both admin and user roles can view a table of all past invoice extractions.
+- The table should show key summary columns: invoice ID, vendor, date, status (approved/rejected/pending), confidence score, and who processed it.
+- Clicking a row opens a detail view showing the full extracted data, validation results, confidence scores, user corrections, and feedback history.
+
 ### Sample Test Invoices
 - The project must include a set of sample invoices for testing and demo purposes, covering a variety of real-world scenarios:
   - **Clean digital PDFs** — well-structured, high-resolution invoices generated digitally (e.g., from accounting software).
   - **Scanned documents** — invoices that have been scanned from paper, with typical scan artifacts.
-  - **Low-resolution documents** — poor quality scans or photos with noise, skew, or partial occlusion to test extraction robustness.
+  - **Low-resolution documents** — poor quality scans or photos with noise, skew, blur, or partial occlusion to test extraction robustness.
   - **Varying formats and vendors** — invoices from different vendors with different layouts, field names, currencies, and line item structures.
+  - **Documents with extraneous content** — invoices that include unnecessary information such as marketing text, terms and conditions, handwritten notes, stamps, or unrelated data mixed in with the actual invoice fields.
 - Sample invoices should contain realistic but fictional data (vendor names, amounts, dates, line items).
-- The samples should stress-test the Extraction Agent's ability to handle diverse, non-standardized inputs.
+- The samples should stress-test the Extraction Agent's ability to handle diverse, non-standardized, and noisy inputs — filtering out irrelevant content and extracting only the meaningful invoice data.

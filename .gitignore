@@ -1,4 +1,43 @@
+# Python
 .venv/
+venv/
+env/
 __pycache__/
 *.pyc
+*.pyo
+*.egg-info/
+*.egg
+dist/
+build/
+
+# Node
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# Data & uploads (runtime, not source)
+data/
+uploads/
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Root package-lock (stale; frontend has its own)
+/package-lock.json
+
+# Logs
+*.log
+npm-debug.log*

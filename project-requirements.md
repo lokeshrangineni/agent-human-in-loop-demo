@@ -45,22 +45,29 @@ Invoice processing and approval workflow.
 - Low-confidence fields should be highlighted or flagged so the user knows where to focus their review.
 - The Validation Agent should also provide an overall confidence score for the invoice as a whole, factoring in extraction confidence and business rule compliance.
 
-### Human-in-the-Loop
+### Workflow 1: Data Review and Approval (Human-in-the-Loop)
 - The user reviews the extracted data, validation results, and confidence scores.
 - The user can:
   - **Approve** the invoice for payment.
   - **Reject** the invoice.
   - **Request re-processing** — ask the agents to re-extract or re-validate.
-  - **Manually correct** any extracted or validated fields before final approval.
+  - **Manually correct** any extracted or validated fields.
   - **Add new rows or fields** — the user can introduce entirely new line items or data fields that the extraction agent did not capture, since invoices vary widely in structure.
+- If the user modifies, corrects, or adds any data, the changes do **not** take effect immediately. They are submitted for **admin approval**.
+- The admin reviews the user's proposed changes, can approve them as-is, modify them further, or reject them.
+- Only after admin approval are the changes applied to the final extracted data.
 
-### Feedback Loop and Agent Learning
-- Every user correction, addition, or rejection is captured as structured feedback and stored.
-- Agents use accumulated feedback to improve over time:
+### Workflow 2: Feedback to Agents (Agent Learning)
+- This is a separate workflow from data corrections. Its purpose is to improve how the agents perform in the future.
+- The user can submit feedback on the extraction and validation results (e.g., "this vendor always puts the invoice number in the top-right corner" or "tax field was misread as a line item").
+- User-submitted feedback goes into a **pending review queue** — it is not applied to the agents directly.
+- The admin reviews pending feedback, can modify it, approve it, or reject it.
+- Only admin-approved feedback is stored in the feedback memory and used by the agents for learning.
+- Agents use accumulated approved feedback to improve over time:
   - **Extraction Agent** — learns from corrections (e.g., if users consistently fix a certain field for a specific vendor, the agent incorporates that pattern into future extractions for that vendor). Past corrections are provided as few-shot examples in the agent's prompt context for similar invoices.
   - **Validation Agent** — learns from approvals and rejections to refine its business rule application and adjust its approval recommendations (e.g., if users repeatedly override a rule violation, the agent adjusts the severity of that rule).
 - A feedback memory store records: the original extraction, what the user changed, the vendor, and the invoice format — so agents can retrieve relevant past corrections when processing new invoices.
-- Over time, confidence scores should improve for recurring vendors and invoice formats as the agents accumulate more feedback.
+- Over time, confidence scores should improve for recurring vendors and invoice formats as the agents accumulate more approved feedback.
 - The system should surface a summary of how agent accuracy has improved (e.g., fewer corrections needed over time) to demonstrate the value of the feedback loop.
 
 ### Roles and Permissions
@@ -68,15 +75,16 @@ Invoice processing and approval workflow.
 **User Role**
 - Can upload invoices and trigger the extraction workflow.
 - Can review extracted data, validation results, and confidence scores.
-- Can approve, reject, request re-processing, manually correct fields, and add new rows/fields.
-- Can provide feedback on extraction and validation results.
+- Can propose corrections, add rows/fields, approve, reject, or request re-processing (Workflow 1) — but modifications require admin approval before taking effect.
+- Can submit feedback to improve agent behavior (Workflow 2) — but feedback requires admin approval before it is applied to the agents.
 - Can view all past extractions in a tabular format and drill into the details of any individual extraction.
 
 **Admin Role**
 - Has all User permissions.
-- Can review feedback submitted by users before it is applied to the agents.
-- Can modify user-submitted feedback (edit, approve, or reject it) and then submit the final version to the agents for learning.
+- **Workflow 1 approval:** Reviews user-proposed data corrections/additions and approves, modifies, or rejects them before they are applied to the final extracted data.
+- **Workflow 2 approval:** Reviews user-submitted feedback and approves, modifies, or rejects it before it is stored and used by the agents for learning.
 - Can view all past extractions in a tabular format and drill into the details of any individual extraction.
+- Can see pending approval queues for both workflows.
 
 **Authentication (Initial Implementation)**
 - For the initial demo, user and admin accounts are hardcoded and selectable from a dropdown (no login flow).
